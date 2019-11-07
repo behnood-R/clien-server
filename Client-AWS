@@ -1,0 +1,91 @@
+    print("Done Recieving")
+
+    DownloadFile.close()
+    break
+
+
+
+def read_json(filename):
+    return json.loads(open(filename).read())
+def write_csv(data,filename):
+    with open(filename, 'w+') as outf:
+        writer = csv.DictWriter(outf, data[0].keys())
+        writer.writeheader()
+        for row in data:
+            writer.writerow(row)
+
+write_csv(read_json('sample.json'), 'output.csv')
+
+s.close()
+print("Client RFW ID =" +RFWID)
+print("last Batch ID number = ")
+print(int(last_batch_id))
+"c4.py" 76L, 1821C                                            73,9          Bot
+    print("Done Recieving")
+
+    DownloadFile.close()
+    break
+
+
+
+def read_json(filename):
+    return json.loads(open(filename).read())
+def write_csv(data,filename):
+    with open(filename, 'w+') as outf:
+        writer = csv.DictWriter(outf, data[0].keys())
+        writer.writeheader()
+        for row in data:
+            writer.writerow(row)
+
+write_csv(read_json('sample.json'), 'output.csv')
+
+s.close()
+print("Client RFW ID =" +RFWID)
+print("last Batch ID number = ")
+print(int(last_batch_id))
+                                                              73,9          Bot
+s.send(Metric.encode())
+unit = input("Batch Unit : ")
+s.send(unit.encode())
+batch_id = input("Batch ID : ")
+s.send(batch_id.encode())
+batch_size = input("Batch Size : ")
+s.send(batch_size.encode())
+
+last_batch_id = s.recv(1024)
+
+FileName = "sample.json"
+Data = ""
+
+while True:
+    Data = s.recv(1024)
+    DownloadFile = open(FileName,"wb")
+    i = 1
+    while Data:
+        print('Recieving...%d' %(i))
+        DownloadFile.write(Data)
+        Data = s.recv(1024)
+        i = i + 1
+
+    print("Done Recieving")
+
+    DownloadFile.close()
+    break
+
+
+
+def read_json(filename):
+    return json.loads(open(filename).read())
+def write_csv(data,filename):
+    with open(filename, 'w+') as outf:
+        writer = csv.DictWriter(outf, data[0].keys())
+        writer.writeheader()
+        for row in data:
+            writer.writerow(row)
+
+write_csv(read_json('sample.json'), 'output.csv')
+
+s.close()
+print("Client RFW ID =" +RFWID)
+print("last Batch ID number = ")
+print(int(last_batch_id))
