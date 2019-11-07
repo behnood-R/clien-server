@@ -1,0 +1,117 @@
+import socket
+import threading
+import os
+import pandas as pd
+import csv, json
+
+class ThreadedServer():
+    def __init__(self):
+        self.host = socket.gethostname()
+        self.port = 49159
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.s.bind((self.host, self.port))
+
+
+    def listen(self):
+        self.s.listen(5)
+        while True:
+            c, addr = self.s.accept()
+            c.settimeout(60)
+            threading.Thread(target = self.listenToClient,args = (c,addr)).start()
+
+    def listenToClient(self, c, addr):
+        block_size = 1024
+        print('Got connection from', addr)
+
+        RFWID = str (c.recv(1024))
+#	print ("Client by below ID going to send request :")
+        print (RFWID)
+
+
+        benchmark_type = c.recv(1024)
+        if (benchmark_type.decode() == "DVD store test"):
+            Filename = "DVDstoretest.csv"
+            total_row = 12752
+        elif (benchmark_type.decode() == "DVD store train"):
+            Filename = "DVDstoretrain.csv"
+            total_row = 15672
+        elif (benchmark_type.decode() == "NDBench test"):
+            Filename = "NDBenchtest.csv"
+            total_row = 10408
+        elif (benchmark_type.decode() == "NDBench train"):
+            Filename = "NDBenchtrain.csv"
+            total_row = 15655
+
+
+        workload_metric = c.recv(1024)
+        if (workload_metric.decode() == "CPUUtilization_Average"):
+            column_number = 1
+            column_header = "CPUUtilization_Average"
+        elif (workload_metric.decode() == "NetworkIn_Average"):
+            column_number = 2
+            column_header = "NetworkIn_Average"
+        elif (workload_metric.decode() == "NetworkOut_Average"):
+            column_number = 3
+            column_header = "NetworkOut_Average"
+        elif (workload_metric.decode() == "MemoryUtilization_Average"):
+            column_number = 4
+            column_header = "MemoryUtilization_Average"
+        elif (workload_metric.decode() == "Final_Target"):
+            column_number = 5
+            column_header = "Final_Target"
+
+
+        batch_unit = int(c.recv(1024))
+        unit_count = batch_unit/total_row
+        batch_id = int(c.recv(1024))
+        row_number = batch_id * batch_unit
+        batch_size = int(c.recv(1024))
+        last_row_number = (batch_size * batch_unit) + row_number
+        last_batch_id = int(last_row_number / batch_unit)
+
+
+        last_batch_id_send= str(last_batch_id)
+        c.send(bytes(last_batch_id_send,encoding="utf-8"))
+
+        result = pd.read_csv(Filename)
+        columnname = "MemoryUtilization_Average"
+
+        selected_rows_column = result.iloc [row_number:last_row_number, column_number]
+        print(selected_rows_column)
+        selected_rows_column.to_csv(r'/root/result.csv', index=False)
+
+
+        CSV_PATH = 'result.csv'
+        JSON_PATH = 'cloud.json'
+        csv_file = csv.DictReader(open(CSV_PATH, 'r'))
+
+        json_list = []
+        for row in csv_file:
+            json_list.append(row)
+        with open(JSON_PATH, "w") as jsonFile:
+            jsonFile.write(json.dumps(json_list))
+
+
+        print("File Found")
+        upfile = "cloud.json"
+        UploadFile = open("/root/"+upfile,"rb")
+        Read = UploadFile.read(1024)
+        i = 1
+        while Read:
+            print("Sending...%d" %(i))
+            c.send(Read)
+            Read = UploadFile.read(1024)
+            i = i + 1
+        print("Done Sending")
+        UploadFile.close()
+
+
+
+        c.close()
+        print("Client RFW ID = " +RFWID)
+        print("the last Batch ID = " + last_batch_id_send)
+
+
+if __name__ == "__main__":
+    ThreadedServer().listen()
